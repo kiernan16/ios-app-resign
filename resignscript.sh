@@ -23,31 +23,97 @@
 
 mkdir -p ~/Desktop/NEW\ RESIGNED\ APPS
 mkdir -p ~/Desktop/OLD\ APPS
+
+mkdir -p ~/Desktop/tmp1
+mkdir -p ~/Desktop/tmp2
+mkdir -p ~/Desktop/tmp3
+mkdir -p ~/Desktop/tmp4
 FILESARRAY=("*.ipa")
 
+count=1
+
 for element in ${FILESARRAY[@]}
- do
-    unzip "$element"
-    FILENAME="${element%.ipa}"
+  do
+    case "$count" in
+      1) mv "$element" ~/Desktop/tmp1;
+          ((count++));;
+      2) mv "$element" ~/Desktop/tmp2;
+          ((count++));;
+      3) mv "$element" ~/Desktop/tmp3;
+          ((count++));;
+      4) mv "$element" ~/Desktop/tmp4;
+          count=1;;
+esac
+  done
 
-    /usr/libexec/PlistBuddy -x -c "print :Entitlements " /dev/stdin <<< $(security cms -D -i ./$PROVISION) > entitlements.plist
+  resign() {
+    for element in $1
+     do
+        unzip "$element"
+        FILENAME="${element%.ipa}"
 
-    rm -r "Payload/$FILENAME.app/_CodeSignature" 2> /dev/null | true
-    cp "$PROVISION" "Payload/$FILENAME.app/embedded.mobileprovision"
+        /usr/libexec/PlistBuddy -x -c "print :Entitlements " /dev/stdin <<< $(security cms -D -i ./$PROVISION) > entitlements.plist
 
-    /usr/bin/codesign -fv -s "$CERTIFICATE" "Payload/$FILENAME.app" --entitlements entitlements.plist
+        rm -r "Payload/$FILENAME.app/_CodeSignature" 2> /dev/null | true
+        cp "$PROVISION" "Payload/$FILENAME.app/embedded.mobileprovision"
 
-    zip -qry "resigned.$element" Payload
-    rm -r "Payload" 2> /dev/null | true   #required to work correctly
+        /usr/bin/codesign -fv -s "$CERTIFICATE" "Payload/$FILENAME.app" --entitlements entitlements.plist
 
-    # copy all new resigned files to the new directory
-    mv ./resigned.* ~/Desktop/NEW\ RESIGNED\ APPS
-    # move all old files to another directory
-    mv ./"$element" ~/Desktop/OLD\ APPS
-done
+        zip -qry "resigned.$element" Payload
+        rm -r "Payload" 2> /dev/null | true   #required to work correctly
 
-rm -r "entitlements.plist" 2> /dev/null | true
+        # copy all new resigned files to the new directory
+        mv ./resigned.* ~/Desktop/NEW\ RESIGNED\ APPS
+        # move all old files to another directory
+        mv ./"$element" ~/Desktop/OLD\ APPS
+    done
 
+    rm -r "entitlements.plist" 2> /dev/null | true
+
+  }
+
+cd ~/Desktop/tmp1
+tmp1ARRAY=("*.ipa")
+resign "${tmp1ARRAY[@]}" &
+cd ~/Desktop/tmp2
+tmp2ARRAY=("*.ipa")
+resign "${tmp2ARRAY[@]}" &
+cd ~/Desktop/tmp3
+tmp3ARRAY=("*.ipa")
+resign "${tmp3ARRAY[@]}" &
+cd ~/Desktop/tmp4
+tmp4ARRAY=("*.ipa")
+resign "${tmp4ARRAY[@]}" &
+wait
+
+# for element in ${FILESARRAY[@]}
+#  do
+#     unzip "$element"
+#     FILENAME="${element%.ipa}"
+#
+#     /usr/libexec/PlistBuddy -x -c "print :Entitlements " /dev/stdin <<< $(security cms -D -i ./$PROVISION) > entitlements.plist
+#
+#     rm -r "Payload/$FILENAME.app/_CodeSignature" 2> /dev/null | true
+#     cp "$PROVISION" "Payload/$FILENAME.app/embedded.mobileprovision"
+#
+#     /usr/bin/codesign -fv -s "$CERTIFICATE" "Payload/$FILENAME.app" --entitlements entitlements.plist
+#
+#     zip -qry "resigned.$element" Payload
+#     rm -r "Payload" 2> /dev/null | true   #required to work correctly
+#
+#     # copy all new resigned files to the new directory
+#     mv ./resigned.* ~/Desktop/NEW\ RESIGNED\ APPS
+#     # move all old files to another directory
+#     mv ./"$element" ~/Desktop/OLD\ APPS
+# done
+#
+# rm -r "entitlements.plist" 2> /dev/null | true
+#
+
+rm -r ~/Desktop/tmp1
+rm -r ~/Desktop/tmp2
+rm -r ~/Desktop/tmp3
+rm -r ~/Desktop/tmp4
 echo
 echo
 echo ------- FILES HAVE BEEN RESIGNED --------
