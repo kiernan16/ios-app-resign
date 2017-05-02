@@ -28,6 +28,10 @@ mkdir -p ~/Desktop/tmp1
 mkdir -p ~/Desktop/tmp2
 mkdir -p ~/Desktop/tmp3
 mkdir -p ~/Desktop/tmp4
+cp ~/Desktop/FilesToResign/Nielsen_Enterprise_Distribution.mobileprovision ~/Desktop/tmp1
+cp ~/Desktop/FilesToResign/Nielsen_Enterprise_Distribution.mobileprovision ~/Desktop/tmp2
+cp ~/Desktop/FilesToResign/Nielsen_Enterprise_Distribution.mobileprovision ~/Desktop/tmp3
+cp ~/Desktop/FilesToResign/Nielsen_Enterprise_Distribution.mobileprovision ~/Desktop/tmp4
 FILESARRAY=("*.ipa")
 
 count=1
@@ -83,7 +87,7 @@ tmp3ARRAY=("*.ipa")
 resign "${tmp3ARRAY[@]}" &
 cd ~/Desktop/tmp4
 tmp4ARRAY=("*.ipa")
-resign "${tmp4ARRAY[@]}" &
+resign "${tmp4ARRAY[@]}"
 wait
 
 # for element in ${FILESARRAY[@]}
